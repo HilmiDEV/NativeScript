@@ -1,5 +1,6 @@
 import viewModule = require("ui/core/view");
 import common = require("./background-common");
+import color = require("color");
 import * as styleModule from "./style";
 
 global.moduleMerge(common, exports);
@@ -150,7 +151,7 @@ function drawClipPath(view: viewModule.View) {
         var rY = common.cssValueToDevicePixels(arr[1], bounds.bottom);
         var cX = common.cssValueToDevicePixels(arr[3], bounds.right);
         var cY = common.cssValueToDevicePixels(arr[4], bounds.bottom);
-        
+
         var left = cX - rX;
         var top = cY - rY;
         var width = rX * 2;
@@ -173,13 +174,35 @@ function drawClipPath(view: viewModule.View) {
 
             if (!firstPoint) {
                 firstPoint = point;
-                CGPathMoveToPoint(path, null, point.x, point.y)
+                CGPathMoveToPoint(path, null, point.x, point.y);
             }
 
-            CGPathAddLineToPoint(path, null, point.x, point.y)
+            CGPathAddLineToPoint(path, null, point.x, point.y);
         }
 
-        CGPathAddLineToPoint(path, null, firstPoint.x, firstPoint.y)
+        CGPathAddLineToPoint(path, null, firstPoint.x, firstPoint.y);
+
+    } else if (functionName === "linear-gradient") {
+        var arr = value.split(/[,]+/);
+
+        var gradientLayer = CAGradientLayer.layer();
+        gradientLayer.frame = nativeView.bounds;
+
+        var angle = parseFloat(arr[0].replace("deg", "").trim());
+        gradientLayer.startPoint = toPoint(angle, 0);
+        gradientLayer.endPoint = toPoint(angle, 1);
+
+        var colors = NSMutableArray.new();
+        for (let i = 1; i < arr.length; i++) {
+            let colorAndOffset = arr[i].trim().split(/[\s]+/);
+            let c = new color.Color(colorAndOffset[0].trim());
+            //let offset = common.cssValueToDevicePixels(colorAndOffset[1].trim());
+            colors.addObject(c.ios.CGColor);
+        }
+
+        gradientLayer.colors = colors;
+
+        nativeView.layer.addSublayer(gradientLayer);
     }
 
     if (path) {
@@ -202,4 +225,9 @@ function drawClipPath(view: viewModule.View) {
             nativeView.layer.addSublayer(borderLayer);
         }
     }
+}
+
+function toPoint(deg, radius): CGPoint {
+    var rad = Math.PI * deg / 180;
+    return CGPointMake(radius * Math.cos(rad), radius * Math.sin(rad));
 }

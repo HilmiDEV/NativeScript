@@ -3,6 +3,7 @@ import common = require("./background-common");
 import definition = require("ui/styling/background");
 import view = require("ui/core/view");
 import types = require("utils/types");
+import color = require("color");
 import * as styleModule from "./style";
 import * as buttonModule from "ui/button";
 
@@ -333,7 +334,7 @@ function drawClipPath(clipPath: string, canvas: android.graphics.Canvas, paint: 
         var rY = common.cssValueToDevicePixels(arr[1], bounds.bottom);
         var cX = common.cssValueToDevicePixels(arr[3], bounds.right);
         var cY = common.cssValueToDevicePixels(arr[4], bounds.bottom);
-        
+
         var left = cX - rX;
         var top = cY - rY;
         var right = (rX * 2) + left;
@@ -351,7 +352,7 @@ function drawClipPath(clipPath: string, canvas: android.graphics.Canvas, paint: 
                 x: common.cssValueToDevicePixels(xy[0], bounds.width()),
                 y: common.cssValueToDevicePixels(xy[1], bounds.height())
             };
-            
+
             if (!firstPoint) {
                 firstPoint = point;
                 path.moveTo(point.x, point.y);
@@ -363,5 +364,27 @@ function drawClipPath(clipPath: string, canvas: android.graphics.Canvas, paint: 
         path.lineTo(firstPoint.x, firstPoint.y);
 
         canvas.drawPath(path, paint);
+    } else if (functionName === "linear-gradient") {
+        var arr = value.split(/[,]+/);
+
+        var angle = parseFloat(arr[0].replace("deg", "").trim());
+
+        var colors = Array.create("float", arr.length);
+        for (let i = 1; i < arr.length; i++) {
+            let colorAndOffset = arr[i].trim().split(/[\s]+/);
+            let c = new color.Color(colorAndOffset[0].trim());
+            //let offset = common.cssValueToDevicePixels(colorAndOffset[1].trim());
+            colors[i] = c.android;
+        }
+
+        var gradient = new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM, colors);
+
+        gradient.setGradientType(android.graphics.drawable.GradientDrawable.LINEAR_GRADIENT);
+        gradient.setGradientRadius(canvas.getWidth() * 2);
+        gradient.setDither(true);
+        gradient.setGradientCenter(-0.1f, -0.1f);
+        gradient.setBounds(cb);
+        gradient.set
+        gradient.draw(canvas);
     }
 }

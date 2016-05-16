@@ -403,11 +403,11 @@ function isPaddingValid(value: number): boolean {
     return isFinite(value) && !isNaN(value) && value >= 0;
 }
 
-var supportedPaths = ["rect", "circle", "ellipse", "polygon"];
+var supportedPaths = ["rect", "circle", "ellipse", "polygon", "linear-gradient"];
 function isClipPathValid(value: string): boolean {
     var functionName = value.substring(0, value.indexOf("(")).trim();
     
-    return supportedPaths.indexOf(functionName) !== -1 || value === "";
+    return supportedPaths.indexOf(functionName) !== -1 || value === "none" || value === "";
 }
 
 function isMarginValid(value: number): boolean {
